@@ -1,0 +1,11 @@
+image: docker
+services:
+  - docker:dind
+stages:
+  - deploy
+deploy:
+  stage: deploy
+  script:
+    - docker build -t 127.0.0.1:5000/myapp .
+    - docker push 127.0.0.1:5000/myapp
+    - docker stack deploy --compose-file deploy/docker-swarm/docker-compose.yml <STACK_NAME>

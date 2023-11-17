@@ -1,0 +1,31 @@
+version: "3.8"
+
+#printf "your-access-key" | docker secret create S3_ACCESS_KEY -
+#printf "your-secret-key" | docker secret create S3_SECRET_KEY -
+services:
+  plugin-s3fs:
+    image: mavenugo/swarm-exec:17.03.0-ce
+    secrets:
+      - S3_ACCESS_KEY
+      - S3_SECRET_KEY
+    environment:
+      - AWSACCESSKEYID_FILE=/run/secrets/S3_ACCESS_KEY
+      - AWSSECRETACCESSKEY_FILE=/run/secrets/S3_SECRET_KEY
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: sh -c "docker plugin install --alias s3fs mochoa/s3fs-volume-plugin --grant-all-permissions --disable AWSACCESSKEYID=$$(cat $$AWSACCESSKEYID_FILE) AWSSECRETACCESSKEY=$$(cat $$AWSSECRETACCESSKEY_FILE) DEFAULT_S3FSOPTS='url=https://sgp1.vultrobjects.com,bucket=demo'; docker plugin enable s3fs"
+    deploy:
+      mode: global
+      restart_policy:
+        condition: none
+    # volumes:
+    #   - s3fsvol:/consul/data
+
+secrets:
+  S3_ACCESS_KEY:
+    external: true
+  S3_SECRET_KEY:
+    external: true
+# volumes:
+#   s3fsvol:
+#     driver: s3fs
